@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tirexchange-postgres
+    restart: unless-stopped
+    environment:
+      # Must match db.default.* in src/main/resources/axelor-config.properties
+      POSTGRES_DB: tirexchange
+      POSTGRES_USER: axelor
+      POSTGRES_PASSWORD: axelor
+    ports:
+      - "5432:5432"
+    volumes:
+      - tirexchange-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U axelor -d tirexchange"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tirexchange-pgdata:

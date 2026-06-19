@@ -1,0 +1,33 @@
+plugins {
+  id 'com.axelor.app'
+}
+
+axelor {
+  title = "TIR Exchange"
+}
+
+dependencies {
+  // Jackson XML for (de)serializing the EPD messages. Pinned to the same
+  // Jackson version AOP 7.4 ships so databind and the modules stay in sync.
+  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.7'
+  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.7'
+
+  // Bean validation API (provides javax.validation.ValidationException).
+  // AOP 7.4 is on the javax namespace.
+  implementation 'javax.validation:validation-api:2.0.1.Final'
+
+  // Lombok for the DTOs
+  compileOnly 'org.projectlombok:lombok:1.18.34'
+  annotationProcessor 'org.projectlombok:lombok:1.18.34'
+  testCompileOnly 'org.projectlombok:lombok:1.18.34'
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+
+  // MapStruct mappers
+  implementation 'org.mapstruct:mapstruct:1.6.3'
+  annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+  annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+  // Test
+  testImplementation 'org.mockito:mockito-core:5.14.2'
+  testImplementation 'org.assertj:assertj-core:3.26.3'
+}

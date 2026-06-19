@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views https://axelor.com/xml/ns/object-views/object-views_7.4.xsd">
+
+  <grid name="tir-message-grid" title="TIR messages" model="kg.itg.tirexchange.db.TirMessage">
+    <field name="id" title="Id"/>
+    <field name="messageType"/>
+    <field name="guaranteeNumber"/>
+    <field name="iruReference"/>
+    <field name="customsIndex"/>
+    <field name="status"/>
+    <field name="createdAt"/>
+  </grid>
+
+  <form name="tir-message-form" title="TIR message" model="kg.itg.tirexchange.db.TirMessage">
+    <panel title="Overview">
+      <field name="messageType"/>
+      <field name="status"/>
+      <field name="guaranteeNumber"/>
+      <field name="iruReference"/>
+      <field name="customsIndex"/>
+      <field name="createdAt"/>
+    </panel>
+    <panel title="Payload">
+      <field name="payload" showTitle="false" colSpan="12" widget="CodeEditor" x-code-syntax="xml"/>
+    </panel>
+  </form>
+
+</object-views>

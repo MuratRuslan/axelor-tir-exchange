@@ -1,0 +1,11 @@
+.gradle/
+build/
+bin/
+out/
+*.war
+.hsqldb/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
