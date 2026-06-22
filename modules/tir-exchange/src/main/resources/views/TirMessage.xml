@@ -3,9 +3,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://axelor.com/xml/ns/object-views https://axelor.com/xml/ns/object-views/object-views_7.4.xsd">
 
-  <!-- Read-only: TIR messages are created by the exchange service, not edited in the UI. -->
-  <grid name="tir-message-grid" title="TIR messages" model="kg.itg.tirexchange.db.TirMessage"
-        canNew="false" canEdit="false" canDelete="false" canArchive="false" edit-icon="false" editable="false">
+  <grid name="tir-message-grid" title="TIR messages" model="kg.itg.tirexchange.db.TirMessage">
     <field name="id" title="Id"/>
     <field name="messageType"/>
     <field name="guaranteeNumber"/>
@@ -15,9 +13,7 @@
     <field name="createdAt"/>
   </grid>
 
-  <form name="tir-message-form" title="TIR message" model="kg.itg.tirexchange.db.TirMessage"
-        canNew="false" canEdit="false" canDelete="false" canSave="false" canCopy="false"
-        readonlyIf="true">
+  <form name="tir-message-form" title="TIR message" model="kg.itg.tirexchange.db.TirMessage">
     <panel title="Overview">
       <field name="messageType"/>
       <field name="status"/>
