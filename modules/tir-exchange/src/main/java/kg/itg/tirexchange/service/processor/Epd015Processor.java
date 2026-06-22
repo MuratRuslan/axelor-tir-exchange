@@ -78,7 +78,9 @@ public class Epd015Processor extends AbstractEpdProcessor {
     }
 
     private void validate(final Epd015RequestDto dto) {
-        requireText(dto.getHolderNumber(), "HolderNumber");
-        requireText(dto.getGuaranteeNumber(), "GuaranteeNumber");
+        required()
+                .text(dto.getHolderNumber(), "HolderNumber")
+                .text(dto.getGuaranteeNumber(), "GuaranteeNumber")
+                .validate();
     }
 }

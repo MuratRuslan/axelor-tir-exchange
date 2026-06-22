@@ -3,7 +3,13 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://axelor.com/xml/ns/object-views https://axelor.com/xml/ns/object-views/object-views_7.4.xsd">
 
-  <grid name="tir-message-grid" title="TIR messages" model="kg.itg.tirexchange.db.TirMessage">
+  <!-- No "+"/delete/archive. A custom "New message" button opens a compose dialog instead. -->
+  <grid name="tir-message-grid" title="TIR messages" model="kg.itg.tirexchange.db.TirMessage"
+        canNew="false" canDelete="false" canArchive="false" canEdit="false" onSave="action-tir-message-process">
+    <toolbar>
+      <button name="composeBtn" title="New message" icon="fa-paper-plane"
+              onClick="action-tir-message-compose"/>
+    </toolbar>
     <field name="id" title="Id"/>
     <field name="messageType"/>
     <field name="guaranteeNumber"/>
@@ -13,18 +19,66 @@
     <field name="createdAt"/>
   </grid>
 
-  <form name="tir-message-form" title="TIR message" model="kg.itg.tirexchange.db.TirMessage">
-    <panel title="Overview">
+  <!-- No save/edit/delete buttons. The Process button (in the body) is the only action;
+       it is shown in the "New message" compose dialog and when viewing a record. -->
+  <form name="tir-message-form" title="TIR message" model="kg.itg.tirexchange.db.TirMessage"
+        canSave="false" canEdit="false" canDelete="false" canNew="false" onNew="action-tir-message-on-new"
+        onSave="action-tir-message-process">
+    <panel title="Message">
       <field name="messageType"/>
       <field name="status"/>
       <field name="guaranteeNumber"/>
+      <field name="holderNumber"/>
       <field name="iruReference"/>
       <field name="customsIndex"/>
-      <field name="createdAt"/>
+      <field name="createdAt" readonly="true"/>
+      <button name="processBtn" title="Process message" icon="fa-play"
+              onClick="action-tir-message-process" colSpan="4"/>
     </panel>
-    <panel title="Payload">
-      <field name="payload" showTitle="false" colSpan="12" widget="CodeEditor" x-code-syntax="xml"/>
+    <panel title="Response" showIf="responseXml">
+      <field name="responseXml" showTitle="false" colSpan="12" readonly="true"
+             widget="CodeEditor" x-code-syntax="xml"/>
     </panel>
   </form>
+
+  <!-- "New message" opens the form as a compose dialog (popup) showing the input
+       fields and the Process button, without the standard New/Save toolbar. -->
+  <action-view name="action-tir-message-compose" title="New message"
+               model="kg.itg.tirexchange.db.TirMessage">
+    <view type="form" name="tir-message-form"/>
+    <view-param name="popup" value="true"/>
+    <view-param name="popup-save" value="false"/>
+    <view-param name="forceEdit" value="true"/>
+    <view-param name="show-toolbar" value="false"/>
+  </action-view>
+
+  <!-- Builds an EPD payload from the form values, runs it through the pipeline,
+       and fills the Payload (request) and Response panels. -->
+  <action-method name="action-tir-message-process">
+    <call class="kg.itg.tirexchange.web.TirMessageController" method="process"/>
+  </action-method>
+
+  <!-- Auto-set "Created at" to the current time when a new record is opened. -->
+  <action-record name="action-tir-message-on-new" model="kg.itg.tirexchange.db.TirMessage">
+    <field name="createdAt" expr="eval: java.time.LocalDateTime.now()"/>
+  </action-record>
+
+  <selection name="tir.message.type.select">
+    <option value="EPD015">EPD015</option>
+    <option value="EPD016">EPD016</option>
+    <option value="EPD028">EPD028</option>
+    <option value="EPD029">EPD029</option>
+    <option value="EPD045">EPD045</option>
+    <option value="EPD051">EPD051</option>
+  </selection>
+
+  <selection name="tir.message.status.select">
+    <option value="RECEIVED">RECEIVED</option>
+    <option value="ACCEPTED">ACCEPTED</option>
+    <option value="ACCEPTED_BY_CUSTOMS">ACCEPTED_BY_CUSTOMS</option>
+    <option value="REJECTED">REJECTED</option>
+    <option value="REJECTED_FOR_TRANSIT">REJECTED_FOR_TRANSIT</option>
+    <option value="FINISHED">FINISHED</option>
+  </selection>
 
 </object-views>

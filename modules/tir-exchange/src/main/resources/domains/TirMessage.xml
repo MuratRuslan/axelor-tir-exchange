@@ -14,13 +14,21 @@
     (processors set it and sort messages by it).
   -->
   <entity name="TirMessage" repository="abstract">
-    <string name="messageType" title="Message type" index="true"/>
+    <string name="messageType" title="Message type" selection="tir.message.type.select" index="true"/>
     <string name="guaranteeNumber" title="Guarantee number" index="true"/>
     <string name="iruReference" title="IRU reference"/>
     <string name="customsIndex" title="Customs index"/>
-    <string name="status" title="Status"/>
+    <string name="status" title="Status" selection="tir.message.status.select"/>
     <string name="payload" title="Payload" large="true"/>
     <datetime name="createdAt" title="Created at"/>
+
+    <!-- Transient (not persisted): holder number is only used as input to build
+         an EPD015 request payload from the form values. -->
+    <string name="holderNumber" title="Holder number" transient="true"/>
+
+    <!-- Transient (not persisted): holds the EPD response shown in the form
+         after the "Process message" button runs the payload through the pipeline. -->
+    <string name="responseXml" title="Response" large="true" transient="true"/>
   </entity>
 
 </domain-models>

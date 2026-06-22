@@ -7,7 +7,9 @@ import kg.itg.tirexchange.db.TirMessage;
 import kg.itg.tirexchange.db.repo.TirMessageRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 public abstract class AbstractEpdProcessor implements TirMessageProcessor {
 
@@ -36,9 +38,30 @@ public abstract class AbstractEpdProcessor implements TirMessageProcessor {
         return objectMapper.readValue(xmlPayload, payloadType);
     }
 
-    protected void requireText(final String value, final String fieldName) {
-        if (value == null || value.isBlank()) {
-            throw new ValidationException(fieldName + " is required");
+    /** Starts a fluent required-field check that collects every error and reports them together. */
+    protected Required required() {
+        return new Required();
+    }
+
+    /**
+     * Accumulates required-field validation errors so they can be reported all at once,
+     * instead of failing on the first missing field.
+     */
+    protected static final class Required {
+        private final List<String> errors = new ArrayList<>();
+
+        public Required text(final String value, final String fieldName) {
+            if (value == null || value.isBlank()) {
+                errors.add(fieldName + " is required");
+            }
+            return this;
+        }
+
+        /** Throws a {@link ValidationException} with all collected errors (newline-separated), if any. */
+        public void validate() {
+            if (!errors.isEmpty()) {
+                throw new ValidationException(String.join("\n", errors));
+            }
         }
     }
 

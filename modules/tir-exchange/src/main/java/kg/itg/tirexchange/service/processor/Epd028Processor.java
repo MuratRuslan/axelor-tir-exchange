@@ -50,8 +50,10 @@ public class Epd028Processor extends AbstractEpdProcessor {
     }
 
     private void validate(final Epd028RequestDto dto) {
-        requireText(dto.getGuaranteeNumber(), "GuaranteeNumber");
-        requireText(dto.getStatus(), "Status");
-        requireText(dto.getCustomsIndex(), "Customs index");
+        required()
+                .text(dto.getGuaranteeNumber(), "GuaranteeNumber")
+                .text(dto.getStatus(), "Status")
+                .text(dto.getCustomsIndex(), "Customs index")
+                .validate();
     }
 }

@@ -74,6 +74,20 @@ class EpdProcessorTest {
     }
 
     @Test
+    void reports_all_missing_required_fields_at_once() {
+        final Epd028Processor processor =
+                new Epd028Processor(mock(TirMessageRepository.class), objectMapper, tirMessageMapper, epdDtoMapper);
+
+        final ValidationException exception =
+                assertThrows(ValidationException.class, () -> processor.process("<EPD028></EPD028>"));
+
+        assertThat(exception.getMessage())
+                .contains("GuaranteeNumber is required")
+                .contains("Status is required")
+                .contains("Customs index is required");
+    }
+
+    @Test
     void epd028_returns_epd029_when_original_message_is_accepted() throws JsonProcessingException {
         final TirMessageRepository repo = mock(TirMessageRepository.class);
         final Epd028Processor processor = new Epd028Processor(repo, objectMapper, tirMessageMapper, epdDtoMapper);

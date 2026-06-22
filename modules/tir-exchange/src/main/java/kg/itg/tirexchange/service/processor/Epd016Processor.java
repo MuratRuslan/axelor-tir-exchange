@@ -36,7 +36,9 @@ public class Epd016Processor extends AbstractEpdProcessor {
     }
 
     private void validate(final Epd016RequestDto dto) {
-        requireText(dto.getGuaranteeNumber(), "GuaranteeNumber");
-        requireText(dto.getStatus(), "Status");
+        required()
+                .text(dto.getGuaranteeNumber(), "GuaranteeNumber")
+                .text(dto.getStatus(), "Status")
+                .validate();
     }
 }

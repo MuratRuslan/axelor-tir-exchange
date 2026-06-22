@@ -42,12 +42,11 @@ public class Epd029Processor extends AbstractEpdProcessor {
             return objectMapper.writeValueAsString(dto);
         }
 
-        final String status = STATUS_REJECTED;
         saveMessage(tirMessage.getGuaranteeNumber(),
                 tirMessage.getIruReference(),
                 tirMessage.getPayload(),
                 tirMessage.getCustomsIndex(),
-                status);
+                STATUS_REJECTED);
 
         final Epd051ResponseDto responseDto = epdDtoMapper.toRejectedEpd051(dto);
 
@@ -55,6 +54,8 @@ public class Epd029Processor extends AbstractEpdProcessor {
     }
 
     private void validate(final Epd029ResponseDto dto) {
-        requireText(dto.getGuaranteeNumber(), "GuaranteeNumber");
+        required()
+                .text(dto.getGuaranteeNumber(), "GuaranteeNumber")
+                .validate();
     }
 }
