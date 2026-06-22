@@ -109,3 +109,25 @@ The first start runs the AOP metadata install (a minute or two), then the web UI
 (with a **TIR Exchange → Messages** menu over the saved records) is available at
 `http://localhost:8080/axelor-tirexchange` — log in with `admin` / `admin`.
 Subsequent starts are fast because the metadata persists in PostgreSQL.
+
+## API docs (Swagger UI / OpenAPI)
+
+A self-contained Swagger UI is bundled under
+`modules/tir-exchange/src/main/webapp/swagger-ui/`:
+
+- `index.html` — loads `swagger-ui-dist` from a CDN
+- `openapi.json` — a hand-authored OpenAPI 3.0 spec with the request/response
+  **models and example payloads**
+
+It is hand-authored on purpose: AOP 7.4's built-in OpenAPI scanner only emits
+operation summaries/paths, not response/request schemas or examples (its own
+resources don't use them either), so the generated `/ws/openapi.json` would show
+empty bodies. The bundled spec gives a complete, browsable API.
+
+- Swagger UI: `http://localhost:8080/axelor-tirexchange/swagger-ui/`
+
+Because AOP secures `/ws/*` and serves the page behind login, **log in to the app
+first** (`admin`/`admin`), then open the Swagger UI, click **Authorize** and enter
+`admin`/`admin` (HTTP Basic). That makes **Try it out** work — including the POST
+endpoint — without a session cookie or CSRF token (stateless basic auth is
+enabled via `auth.local.basic-auth = direct`).

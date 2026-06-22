@@ -1,0 +1,246 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TIR Exchange",
+    "description": "TIR-EPD XML message exchange and saved-message history.",
+    "version": "0.0.1-SNAPSHOT"
+  },
+  "servers": [{ "url": "/ws" }],
+  "tags": [
+    { "name": "TIR Exchange", "description": "EPD message exchange and saved-message history" }
+  ],
+  "security": [{ "basicAuth": [] }],
+  "paths": {
+    "/tir/exchange": {
+      "post": {
+        "tags": ["TIR Exchange"],
+        "summary": "Process a TIR EPD XML message",
+        "description": "Accepts an EPD XML payload (EPD015/016/028/029/045/051), routes it to the matching processor by root tag, persists it, and returns an XML response (or a SOAP fault on validation errors).",
+        "operationId": "exchange",
+        "requestBody": {
+          "required": true,
+          "description": "EPD message XML. The root tag selects the processor.",
+          "content": {
+            "application/xml": {
+              "schema": { "$ref": "#/components/schemas/Epd015Request" },
+              "examples": {
+                "EPD015 — accepted (KG…)": {
+                  "summary": "Guarantee number starting with KG → EPD028 ACCEPTED",
+                  "value": "<EPD015>\n    <GuaranteeNumber>KG12345678</GuaranteeNumber>\n    <IruReference>IRU-2025-001</IruReference>\n    <VehicleNumber>01KG123ABC</VehicleNumber>\n    <HolderNumber>TIRH-998877</HolderNumber>\n</EPD015>"
+                },
+                "EPD015 — rejected (XX…)": {
+                  "summary": "Guarantee number starting with XX → EPD016 REJECTED",
+                  "value": "<EPD015>\n    <GuaranteeNumber>XX12345678</GuaranteeNumber>\n    <IruReference>IRU-2025-001</IruReference>\n    <VehicleNumber>01KG123ABC</VehicleNumber>\n    <HolderNumber>TIRH-998877</HolderNumber>\n</EPD015>"
+                },
+                "EPD015 — missing HolderNumber (fault)": {
+                  "summary": "Missing required field → SOAP fault",
+                  "value": "<EPD015>\n    <GuaranteeNumber>KG12345678</GuaranteeNumber>\n    <IruReference>IRU-2025-001</IruReference>\n</EPD015>"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching EPD response XML. The actual root element depends on the request: EPD028/EPD016 (from EPD015), EPD029/EPD051 (from EPD029), EPD045 (from EPD045/EPD051). See the examples and the schemas below.",
+            "content": {
+              "application/xml": {
+                "schema": { "$ref": "#/components/schemas/Epd028Response" },
+                "examples": {
+                  "EPD028 — accepted": {
+                    "value": "<EPD028>\n    <CustomsIndex>CI-1962026ABCD</CustomsIndex>\n    <Status>ACCEPTED</Status>\n    <GuaranteeNumber>KG12345678</GuaranteeNumber>\n</EPD028>"
+                  },
+                  "EPD016 — rejected": {
+                    "value": "<EPD016>\n    <Reason>Invalid guarantee number</Reason>\n    <Status>REJECTED</Status>\n    <GuaranteeNumber>XX12345678</GuaranteeNumber>\n</EPD016>"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error rendered as a SOAP fault",
+            "content": {
+              "application/xml": {
+                "schema": { "$ref": "#/components/schemas/SoapFault" },
+                "examples": {
+                  "SOAP fault": {
+                    "value": "<soap:Fault>\n    <faultcode>CLIENT_VALIDATION_ERROR</faultcode>\n    <faultstring>HolderNumber is required</faultstring>\n</soap:Fault>"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tir/messages": {
+      "get": {
+        "tags": ["TIR Exchange"],
+        "summary": "List saved TIR messages",
+        "description": "Paged history of all processed messages.",
+        "operationId": "getAll",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 0 } },
+          { "name": "size", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paged TIR messages",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TirMessagePage" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tir/messages/{id}": {
+      "get": {
+        "tags": ["TIR Exchange"],
+        "summary": "Get a saved TIR message by id",
+        "operationId": "getById",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "The TIR message",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TirMessage" } } }
+          },
+          "404": { "description": "No message with that id" }
+        }
+      }
+    },
+    "/tir/messages/type/{type}": {
+      "get": {
+        "tags": ["TIR Exchange"],
+        "summary": "List saved TIR messages by message type",
+        "operationId": "getByMessageType",
+        "parameters": [
+          { "name": "type", "in": "path", "required": true, "schema": { "type": "string" }, "example": "EPD015" },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 0 } },
+          { "name": "size", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paged TIR messages",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TirMessagePage" } } }
+          }
+        }
+      }
+    },
+    "/tir/messages/guarantee/{guaranteeNumber}": {
+      "get": {
+        "tags": ["TIR Exchange"],
+        "summary": "List saved TIR messages by guarantee number",
+        "operationId": "getByGuaranteeNumber",
+        "parameters": [
+          { "name": "guaranteeNumber", "in": "path", "required": true, "schema": { "type": "string" }, "example": "KG12345678" },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 0 } },
+          { "name": "size", "in": "query", "schema": { "type": "integer", "format": "int32", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paged TIR messages",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TirMessagePage" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "basicAuth": { "type": "http", "scheme": "basic" }
+    },
+    "schemas": {
+      "Epd015Request": {
+        "type": "object",
+        "xml": { "name": "EPD015" },
+        "properties": {
+          "GuaranteeNumber": { "type": "string", "example": "KG12345678" },
+          "IruReference": { "type": "string", "example": "IRU-2025-001" },
+          "VehicleNumber": { "type": "string", "example": "01KG123ABC" },
+          "HolderNumber": { "type": "string", "example": "TIRH-998877" }
+        }
+      },
+      "Epd016Message": {
+        "type": "object",
+        "xml": { "name": "EPD016" },
+        "properties": {
+          "Reason": { "type": "string", "example": "Invalid guarantee number" },
+          "Status": { "type": "string", "example": "REJECTED" },
+          "GuaranteeNumber": { "type": "string", "example": "XX12345678" }
+        }
+      },
+      "Epd028Response": {
+        "type": "object",
+        "xml": { "name": "EPD028" },
+        "properties": {
+          "CustomsIndex": { "type": "string", "example": "CI-1962026ABCD" },
+          "Status": { "type": "string", "example": "ACCEPTED" },
+          "GuaranteeNumber": { "type": "string", "example": "KG12345678" }
+        }
+      },
+      "Epd029Response": {
+        "type": "object",
+        "xml": { "name": "EPD029" },
+        "properties": {
+          "CustomsIndex": { "type": "string", "example": "CI-1962026ABCD" },
+          "Status": { "type": "string", "example": "ACCEPTED_BY_CUSTOMS" },
+          "GuaranteeNumber": { "type": "string", "example": "KG12345678" },
+          "ValidationDate": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Epd051Response": {
+        "type": "object",
+        "xml": { "name": "EPD051" },
+        "properties": {
+          "Status": { "type": "string", "example": "REJECTED" },
+          "Reason": { "type": "string", "example": "REJECTED BY CUSTOMS" },
+          "GuaranteeNumber": { "type": "string", "example": "TR12345678" }
+        }
+      },
+      "Epd045Response": {
+        "type": "object",
+        "xml": { "name": "EPD045" },
+        "properties": {
+          "Status": { "type": "string", "example": "FINISHED" },
+          "GuaranteeNumber": { "type": "string", "example": "KG12345678" }
+        }
+      },
+      "SoapFault": {
+        "type": "object",
+        "xml": { "name": "soap:Fault" },
+        "properties": {
+          "faultcode": { "type": "string", "example": "CLIENT_VALIDATION_ERROR" },
+          "faultstring": { "type": "string", "example": "HolderNumber is required" }
+        }
+      },
+      "TirMessage": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "example": 3 },
+          "messageType": { "type": "string", "example": "EPD015" },
+          "guaranteeNumber": { "type": "string", "example": "KG12345678" },
+          "iruReference": { "type": "string", "example": "IRU-2025-001" },
+          "customsIndex": { "type": "string", "nullable": true, "example": "CI-1962026ABCD" },
+          "status": { "type": "string", "example": "ACCEPTED" },
+          "payload": { "type": "string", "description": "Original XML payload" },
+          "createdAt": { "type": "integer", "format": "int64", "description": "Epoch milliseconds", "example": 1781866949932 }
+        }
+      },
+      "TirMessagePage": {
+        "type": "object",
+        "description": "Paged list of saved TIR messages",
+        "properties": {
+          "content": { "type": "array", "items": { "$ref": "#/components/schemas/TirMessage" } },
+          "totalElements": { "type": "integer", "format": "int64", "example": 3 },
+          "totalPages": { "type": "integer", "format": "int32", "example": 1 },
+          "number": { "type": "integer", "format": "int32", "example": 0 },
+          "size": { "type": "integer", "format": "int32", "example": 20 }
+        }
+      }
+    }
+  }
+}

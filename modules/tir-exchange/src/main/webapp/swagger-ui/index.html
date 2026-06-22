@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TIR Exchange — API docs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
+  <style> body { margin: 0; } </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js" crossorigin></script>
+  <script>
+    window.onload = function () {
+      // AOP 7.4's OpenAPI scanner does not emit response/request schemas or
+      // examples from annotations, so this page is driven by a hand-authored
+      // openapi.json served next to it. We only override the server URL at
+      // runtime so "Try it out" targets the live endpoints under <context>/ws.
+      var ctx = location.pathname.replace(/\/swagger-ui\/.*$/, '');
+
+      fetch('openapi.json')
+        .then(function (r) { return r.json(); })
+        .then(function (spec) {
+          spec.servers = [{ url: ctx + '/ws' }];
+          window.ui = SwaggerUIBundle({
+            spec: spec,
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            persistAuthorization: true,
+            withCredentials: true,
+            defaultModelsExpandDepth: 2,
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset]
+          });
+        });
+    };
+  </script>
+</body>
+</html>

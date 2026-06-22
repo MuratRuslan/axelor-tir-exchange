@@ -25,10 +25,13 @@ import javax.ws.rs.core.Response;
  *   <li>{@code GET  /ws/tir/messages/guarantee/{guaranteeNumber}}</li>
  * </ul>
  *
+ * <p>API documentation is provided by a hand-authored OpenAPI spec served by the
+ * bundled Swagger UI ({@code /swagger-ui/}); AOP 7.4's OpenAPI scanner does not
+ * emit response/request models from annotations, so they are not used here.
+ *
  * <p>Note: AOP secures {@code /ws/*} with Shiro, so requests must be
- * authenticated (e.g. an authenticated session or HTTP Basic with a valid
- * user). The only base-path change vs. Spring is the {@code /api} → {@code /ws}
- * prefix, which is an AOP convention.
+ * authenticated (e.g. HTTP Basic with a valid user). The only base-path change
+ * vs. Spring is the {@code /api} → {@code /ws} prefix, which is an AOP convention.
  */
 @Path("/tir")
 public class TirExchangeResource {
