@@ -5,7 +5,7 @@
 
   <!-- No "+"/delete/archive. A custom "New message" button opens a compose dialog instead. -->
   <grid name="tir-message-grid" title="TIR messages" model="kg.itg.tirexchange.db.TirMessage"
-        canNew="false" canDelete="false" canArchive="false" canEdit="false" onSave="action-tir-message-process">
+        canNew="false" canDelete="false" canArchive="false" canEdit="true" onSave="action-tir-message-process">
     <toolbar>
       <button name="composeBtn" title="New message" icon="fa-paper-plane"
               onClick="action-tir-message-compose"/>
@@ -22,7 +22,7 @@
   <!-- No save/edit/delete buttons. The Process button (in the body) is the only action;
        it is shown in the "New message" compose dialog and when viewing a record. -->
   <form name="tir-message-form" title="TIR message" model="kg.itg.tirexchange.db.TirMessage"
-        canSave="false" canEdit="false" canDelete="false" canNew="false" onNew="action-tir-message-on-new"
+        canSave="false" canDelete="false" canNew="false" onNew="action-tir-message-on-new"
         onSave="action-tir-message-process">
     <panel title="Message">
       <field name="messageType"/>
@@ -37,6 +37,10 @@
     </panel>
     <panel title="Response" showIf="responseXml">
       <field name="responseXml" showTitle="false" colSpan="12" readonly="true"
+             widget="CodeEditor" x-code-syntax="xml"/>
+    </panel>
+    <panel title="Payload (request)" hidden="true">
+      <field name="payload" showTitle="false" colSpan="12" readonly="true"
              widget="CodeEditor" x-code-syntax="xml"/>
     </panel>
   </form>
